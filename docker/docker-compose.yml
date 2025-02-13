@@ -44,6 +44,31 @@ services:
     networks:
       ran:
         ipv4_address: ${OPEN5GS_IP:-10.53.1.2}
+      ims-net:
+
+  vonr:
+    container_name: vonr_ims
+    build:
+      context: VoNR
+      target: VoNR
+    env_file:
+      - ${VONR_ENV_FILE:-VoNR/vonr.env}
+    privileged: true
+    ports:
+    - "5060:5060/udp"  # SIP (Session Initiation Protocol)
+    - "5061:5061/tcp"  # SIP sécurisé (TLS)
+    - "3868:3868/tcp"  # Diameter pour communication avec HSS
+    command: command: [ "/bin/sh", "-c", "/start-ims.sh" ]
+    healthcheck:
+      test: [ "CMD", "kamctl", "rpc", "core.ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+     ims-net:  # Réseau IMS séparé
+       ipv4_address: 10.53.2.2
+     ran:  # Connexion au réseau du 5GC pour interagir avec le cœur 5G
 
   gnb:
     container_name: srsran_gnb
