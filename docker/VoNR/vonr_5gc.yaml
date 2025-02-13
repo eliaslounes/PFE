@@ -1,11 +1,14 @@
 services:
   webui:
+    build:
+      context: ./webui
+      dockerfile: Dockerfile
     image: docker_webui
     container_name: webui
     depends_on:
       - mongo
     env_file:
-      - .env
+      - vonr.env
     environment:
       - COMPONENT_NAME=webui
     volumes:
@@ -24,7 +27,7 @@ services:
     image: docker_dns
     container_name: dns
     env_file:
-      - .env
+      - vonr.env
     volumes:
       - ./dns:/mnt/dns
       - /etc/timezone:/etc/timezone:ro
@@ -41,7 +44,7 @@ services:
     container_name: rtpengine
     privileged: true
     env_file:
-      - .env
+      - vonr.env
     volumes:
       - ./rtpengine:/mnt/rtpengine
       - /etc/timezone:/etc/timezone:ro
@@ -68,7 +71,7 @@ services:
     image: docker_mysql
     container_name: mysql
     env_file:
-      - .env
+      - vonr.env
     volumes:
       - dbdata:/var/lib/mysql
       - /etc/timezone:/etc/timezone:ro
@@ -89,7 +92,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     env_file:
-      - .env
+      - vonr.env
     depends_on:
       - dns
       - mysql
@@ -103,7 +106,10 @@ services:
       default:
         ipv4_address: ${PYHSS_IP}
   icscf:
-    image: docker_kamailio
+    build:
+      context: ./ims_base
+      dockerfile: Dockerfile 
+    image: vonr_icscf
     container_name: icscf
     dns: ${DNS_IP}
     volumes:
@@ -111,7 +117,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     env_file:
-      - .env
+      - vonr.env
     environment:
       - COMPONENT_NAME=icscf
     depends_on:
@@ -127,7 +133,10 @@ services:
       default:
         ipv4_address: ${ICSCF_IP}
   scscf:
-    image: docker_kamailio
+    build:
+      context: ./ims_base
+      dockerfile: Dockerfile 
+    image: vonr_scscf
     container_name: scscf
     dns: ${DNS_IP}
     volumes:
@@ -135,7 +144,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     env_file:
-      - .env
+      - vonr.env
     environment:
       - COMPONENT_NAME=scscf
     depends_on:
@@ -151,7 +160,10 @@ services:
       default:
         ipv4_address: ${SCSCF_IP}
   pcscf:
-    image: docker_kamailio
+    build:
+      context: ./ims_base
+      dockerfile: Dockerfile 
+    image: vonr_pcscf
     container_name: pcscf
     dns: ${DNS_IP}
     privileged: true
@@ -162,7 +174,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     env_file:
-      - .env
+      - vonr.env
     environment:
       - COMPONENT_NAME=pcscf
       - DEPLOY_MODE=5G
@@ -186,14 +198,10 @@ services:
         ipv4_address: ${PCSCF_IP}
 networks:
   default:
-    name: docker_open5gs_default
-    ipam:
-      config:
-        - subnet: ${TEST_NETWORK}
+    ipv4_address: ${PCSCF_IP}
+  core-net:  # Ajout pour connexion avec Open5GS
+    ipv4_address: ${PCSCF_IP}
+    
 volumes:
-  grafana_data:
-    name: grafana_data
-  mongodbdata:
-    name: docker_open5gs_mongodbdata
   dbdata:
     name: docker_open5gs_dbdata
