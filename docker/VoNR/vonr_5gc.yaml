@@ -194,13 +194,11 @@ services:
       - "6100-6120/tcp"
       - "6100-6120/udp"
     networks:
-      default:
-        ipv4_address: ${PCSCF_IP}
-networks:
-  default:
-    ipv4_address: ${PCSCF_IP}
-  core-net:  # Ajout pour connexion avec Open5GS
-    ipv4_address: ${PCSCF_IP}
+     default:
+       ipv4_address: ${PCSCF_IP}
+    core-net:  # Ajout pour connexion avec Open5GS
+       ipv4_address: ${PCSCF_IP}
+
     
 volumes:
   dbdata:
