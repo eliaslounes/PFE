@@ -81,7 +81,7 @@ services:
     - "5060:5060/udp"  # SIP (Session Initiation Protocol)
     - "5061:5061/tcp"  # SIP sécurisé (TLS)
     - "3868:3868/tcp"  # Diameter pour communication avec HSS
-    command: command: [ "/bin/sh", "-c", "/start-ims.sh" ]
+    command: [ "/bin/sh", "-c", "/start-ims.sh" ]
     healthcheck:
       test: [ "CMD", "kamctl", "rpc", "core.ping" ]
       interval: 10s
@@ -195,6 +195,7 @@ volumes:
   gnb-storage:
   grafana-storage:
   influxdb-storage:
+  mongodbdata:
 
 networks:
   ran:
