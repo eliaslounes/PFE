@@ -18,8 +18,27 @@
 # and at http://www.gnu.org/licenses/.
 #
 
+
 services:
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    command: --bind_ip 0.0.0.0
+    env_file:
+      - .env
+    volumes:
+      - mongodbdata:/data/db
+      - mongodbdata:/data/configdb
+    expose:
+      - "27017"
+    networks:
+      core-net:
+        ipv4_address: 10.53.3.2
+
   5gc:
+    depends_on:
+      mongodb:
+        condition: service_started
     container_name: open5gs_5gc
     build:
       context: open5gs
@@ -43,10 +62,14 @@ services:
       retries: 60
     networks:
       ran:
-        ipv4_address: ${OPEN5GS_IP:-10.53.1.2}
-      ims-net:
+        ipv4_address: 10.53.1.2
+      core-net:  # Ajout pour parler avec MongoDB et VoNR
+        ipv4_address: 10.53.3.3
 
   vonr:
+    depends_on:
+      - 5gc
+      - mongodb
     container_name: vonr_ims
     build:
       context: VoNR
@@ -66,9 +89,10 @@ services:
       retries: 5
 
     networks:
-     ims-net:  # Réseau IMS séparé
-       ipv4_address: 10.53.2.2
-     ran:  # Connexion au réseau du 5GC pour interagir avec le cœur 5G
+      ims-net:
+        ipv4_address: 10.53.2.2
+      core-net:  # Ajout pour parler avec Open5GS
+        ipv4_address: 10.53.3.4
 
   gnb:
     container_name: srsran_gnb
@@ -178,6 +202,16 @@ networks:
       driver: default
       config:
         - subnet: 10.53.1.0/24
+  ims-net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.53.2.0/24
+  core-net:  # Ajout d'un réseau commun
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.53.3.0/24
   metrics:
     ipam:
       driver: default

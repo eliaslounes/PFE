@@ -6,7 +6,8 @@
 # the distribution.
 #
 
-db_uri: mongodb://${MONGODB_IP}/open5gs
+db_uri: mongodb://mongodb:27017/open5gs
+
 
 logger:
 
@@ -32,8 +33,8 @@ global:
     # no_bsf: true
     # no_udr: true
     # no_mme: true
-    # no_sgwc: true
-    # no_sgwu: true
+    no_sgwc: true
+    no_sgwu: true
     # no_pcrf: true
     # no_hss: true
 
@@ -212,9 +213,9 @@ upf:
 
 hss:
   freeDiameter:
-    identity: hss.localdomain
-    realm: localdomain
-    listen_on: 127.0.0.8
+    identity: hss.open5gs
+    realm: open5gs
+    listen_on: 10.53.3.3
     no_fwd: true
     load_extension:
       - module: "/open5gs/install/lib/${INSTALL_ARCH}/freeDiameter/dbg_msg_dumps.fdx"
@@ -225,6 +226,9 @@ hss:
       - module: "/open5gs/install/lib/${INSTALL_ARCH}/freeDiameter/dict_nas_mipv6.fdx"
       - module: "/open5gs/install/lib/${INSTALL_ARCH}/freeDiameter/dict_dcca.fdx"
       - module: "/open5gs/install/lib/${INSTALL_ARCH}/freeDiameter/dict_dcca_3gpp.fdx"
+    connect:
+      - identity: pyhss
+        address: 10.53.3.4 
     connect:
       - identity: mme.localdomain
         address: 127.0.0.2
@@ -322,3 +326,12 @@ udr:
     client:
       scp:
         - uri: http://127.0.0.22:7777
+
+pcscf:
+  freeDiameter:
+    identity: pcscf.open5gs
+    realm: open5gs
+    listen_on: 10.53.3.3
+    connect:
+      - identity: pcscf
+        address: 10.53.3.5 
