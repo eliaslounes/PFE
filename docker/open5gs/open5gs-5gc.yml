@@ -229,9 +229,6 @@ hss:
     connect:
       - identity: pyhss
         address: 10.53.3.4 
-    connect:
-      - identity: mme.localdomain
-        address: 127.0.0.2
 pcrf:
   freeDiameter:
     identity: pcrf.localdomain
