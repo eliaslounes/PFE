@@ -1,3 +1,4 @@
+Building/Compiling gNB:
 apt-get install cmake make gcc g++ pkg-config libfftw3-dev libmbedtls-dev libsctp-dev libyaml-cpp-dev libgtest-dev git curl jq -y
 apt-get install libuhd-dev libuhd4.4.0 uhd-host -y
 uhd_find_devices
