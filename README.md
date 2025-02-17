@@ -56,3 +56,9 @@ pcap:
   mac_filename: /tmp/gnb_mac.pcap   # Path where the MAC PCAP is stored.
   ngap_enable: true                # Set to true to enable NGAP PCAPs.
   ngap_filename: /tmp/gnb_ngap.pcap # Path where the NGAP PCAP is stored.
+
+Commandes pour l'horloge :
+uhd_usrp_probe | grep "Clock Source"
+uhd_usrp_probe --args="clock_source=external"
+
+
