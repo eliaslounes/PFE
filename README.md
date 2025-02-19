@@ -1,6 +1,9 @@
 Building/Compiling gNB:
 apt-get install cmake make gcc g++ pkg-config libfftw3-dev libmbedtls-dev libsctp-dev libyaml-cpp-dev libgtest-dev git curl jq -y
-apt-get install libuhd-dev libuhd4.4.0 uhd-host -y
+apt-get install libuhd-dev libuhd4.6.0 uhd-host -y
+find /  -name "uhd_images_downloader.py"
+sudo /usr/libexec/uhd/utils/uhd_images_downloader.py
+export UHD_IMAGES_DIR=/usr/share/uhd/images
 uhd_find_devices
 git clone https://github.com/srsran/srsRAN_Project.git
 cd srsRAN_Project/
