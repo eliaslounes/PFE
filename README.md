@@ -107,5 +107,22 @@ db.subscribers.insertOne({
 })
 
 ------------------------------------------------------------------------------------------------------------------
+pysim:
+-----------------------------------------------------------------------------------------------------------------
+git clone https://github.com/osmocom/pysim
+cd pysim
+sudo apt-get install --no-install-recommends \
+    pcscd libpcsclite-dev \
+    python3 \
+    python3-setuptools \
+    python3-pyscard \
+    python3-pip
+pip3 install -r requirements.txt
+
+=================================
+pcsc_scan
+./pySim-read.py -p 0
+
+
 
 
