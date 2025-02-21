@@ -67,4 +67,45 @@ Commandes pour l'horloge :
 uhd_usrp_probe | grep "Clock Source"
 uhd_usrp_probe --args="clock_source=external"
 
+----------------------------------------------------------------------------------------------------------------------------------------------
+Mongo DB:
+----------------------------------------------------------------------------------------------------------------------------------------------
+docker exec -it open5gs_5gc mongosh --port 27017
+use open5gs
+
+=============================================
+db.subscribers.insertOne({
+  "imsi": "001010000000002",
+  "security": {
+    "k": "00112233445566778899aabbccddeeff",
+    "opc": "63bfa50ee6523365ff14c1f45f88737d"
+  },
+  "ambr": {
+    "uplink": "1Gbps",
+    "downlink": "1Gbps"
+  },
+  "slice": [
+    {
+      "sst": 1,
+      "default_indicator": true,
+      "session": [
+        {
+          "name": "internet",
+          "type": 1,
+          "pcc_rule": [],
+          "ambr": {
+            "uplink": "1Gbps",
+            "downlink": "1Gbps"
+          },
+          "qos": {
+            "index": 9
+          }
+        }
+      ]
+    }
+  ]
+})
+
+------------------------------------------------------------------------------------------------------------------
+
 
