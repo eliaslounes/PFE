@@ -1,0 +1,20 @@
+# Utilisation d'une image Node.js pour une interface web basée sur JavaScript
+FROM node:18-alpine
+
+# Définition du mainteneur
+LABEL maintainer="eliaslounes191931086818@gmail.com"
+
+# Définition du répertoire de travail
+WORKDIR /app
+
+# Copier les fichiers du projet WebUI
+COPY . .
+
+# Installer les dépendances
+RUN npm install
+
+# Exposer le port utilisé par WebUI
+EXPOSE 9999
+
+# Démarrer l'application WebUI
+CMD ["npm", "start"]
