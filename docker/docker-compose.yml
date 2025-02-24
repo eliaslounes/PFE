@@ -66,6 +66,7 @@ services:
       core-net:  # Ajout pour parler avec MongoDB et VoNR
         ipv4_address: 10.53.3.3
 
+
   vonr:
     depends_on:
       - 5gc
@@ -73,7 +74,6 @@ services:
     container_name: vonr_ims
     build:
       context: VoNR
-      target: VoNR
     env_file:
       - ${VONR_ENV_FILE:-VoNR/vonr.env}
     privileged: true

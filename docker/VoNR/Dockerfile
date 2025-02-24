@@ -40,7 +40,7 @@ COPY start-ims.sh /start-ims.sh
 RUN chmod +x /start-ims.sh
 
 # Exposition des ports (SIP, SIP TLS, Diameter, DNS, webgui)
-EXPOSE 5060/udp 5061/tcp 3868/tcp 53/udp 53/tcp 8080/tcp  # Port 8080 pour webgui
+EXPOSE 5060/udp 5061/tcp 3868/tcp 53/udp 53/tcp 8080/tcp   
 
 # Commande par défaut
 CMD ["/start-ims.sh"]
