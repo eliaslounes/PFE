@@ -120,6 +120,7 @@ sudo apt-get install --no-install-recommends \
 pip3 install -r requirements.txt
 
 =====================================================================================================================
+
 pcsc_scan
 ./pySim-read.py -p 
 
