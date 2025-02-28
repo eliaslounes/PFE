@@ -119,10 +119,27 @@ sudo apt-get install --no-install-recommends \
     python3-pip
 pip3 install -r requirements.txt
 
-=================================
+=====================================================================================================================
 pcsc_scan
-./pySim-read.py -p 0
+./pySim-read.py -p 
 
+---------------------------------------------------------------------------------------------------------------------------
+smf:
+  sessions:
+    - apn: srsapn
+      type: ipv4
+      ue_ip_pool: 10.45.0.0/16
+      dns:
+        - 8.8.8.8
+        - 8.8.4.4
 
+---------------------------------------------------------------------------------------------------------------------------------------
 
-
+upf:
+  gtpu:
+    - addr: 192.168.1.10  # Adresse IP de l'interface connectée à Internet
+  pfcp:
+    - addr: 127.0.0.1
+  subnet:
+    - addr: 10.45.0.1/16  # Doit correspondre à l'IP pool de smf.yaml
+      dnn: srsapn
