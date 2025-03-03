@@ -1,0 +1,94 @@
+D'accord, tu as déployé un réseau 5G SA avec srsRAN et tu veux maintenant intégrer le VoNR (Voice over New Radio) en utilisant Kamailio IMS dans un environnement Docker. C’est une excellente idée, et je vais te guider pas à pas sur les fonctions que tu dois ajouter avec Kamailio IMS pour permettre une communication de bout en bout (end-to-end) avec VoNR. Puisque tu as déjà des connaissances sur le sujet, je vais aller droit au but avec des détails techniques adaptés, tout en restant clair.
+
+Contexte de base
+Pour que le VoNR fonctionne dans ton réseau 5G SA :
+
+srsRAN gère la partie radio (gNB) et l’interface avec l’UE (User Equipment).
+5G Core (5GC) (probablement Open5GS ou un équivalent dans ton setup Docker) gère les fonctions réseau comme l’AMF, SMF, UPF, et PCF.
+Kamailio IMS doit jouer le rôle du sous-système IMS (IP Multimedia Subsystem) pour transporter la voix sur IP via SIP (Session Initiation Protocol) et interagir avec le 5GC.
+Le VoNR nécessite une intégration entre le 5GC et l’IMS pour gérer les sessions vocales, la QoS (Quality of Service), et l’authentification. Voici les fonctions essentielles à ajouter avec Kamailio IMS dans ton setup Docker pour une communication end-to-end.
+
+1. Configuration des rôles IMS avec Kamailio
+Kamailio peut fonctionner comme un serveur SIP classique, mais pour le VoNR, tu dois le configurer pour remplir les rôles spécifiques de l’IMS. Ces rôles sont essentiels pour gérer les appels VoNR :
+
+a) P-CSCF (Proxy-CSCF)
+Rôle : C’est le point d’entrée des UEs dans l’IMS. Il relaie les messages SIP entre l’UE et le reste de l’IMS.
+Fonctions à ajouter :
+Gestion SIP : Kamailio doit accepter les requêtes SIP REGISTER/INVITE depuis les UEs via le réseau 5G NR.
+Interface N5 avec PCF : Pour le VoNR, le P-CSCF doit interagir avec la PCF (Policy Control Function) du 5GC via l’interface N5 (basée sur HTTP/2) pour demander des politiques QoS spécifiques (ex. : création d’un flux QoS dédié pour la voix avec QCI 1).
+Sécurité : Activer IPsec (ESP) pour sécuriser les échanges SIP entre l’UE et le P-CSCF, conformément aux spécifications IMS (3GPP TS 33.203).
+b) I-CSCF (Interrogating-CSCF)
+Rôle : Sert d’intermédiaire pour router les requêtes SIP vers le bon S-CSCF en interrogeant l’HSS (Home Subscriber Server).
+Fonctions à ajouter :
+Interrogation HSS : Via l’interface Cx (Diameter), pour récupérer les informations de l’abonné et choisir le S-CSCF.
+Routage SIP : Assure que les requêtes SIP sont correctement dirigées dans l’IMS.
+c) S-CSCF (Serving-CSCF)
+Rôle : Gère la session SIP et les services associés pour l’UE.
+Fonctions à ajouter :
+Gestion de session : Traite les REGISTER, INVITE, et autres messages SIP pour établir et terminer les appels.
+Interaction avec HSS : Via Cx (Diameter) pour l’authentification et la gestion des profils d’abonnés.
+Service logic : Applique les services supplémentaires (ex. : renvoi d’appel) si nécessaire.
+Configuration dans Docker
+Tu peux exécuter chaque rôle (P-CSCF, I-CSCF, S-CSCF) dans des conteneurs Docker séparés avec des fichiers de configuration Kamailio spécifiques (pcscf.cfg, icscf.cfg, scscf.cfg).
+Exemple : Utilise le dépôt herlesupreeth/docker_open5gs qui inclut déjà des Dockerfile pour Kamailio IMS.
+2. Intégration avec le 5G Core (5GC)
+Pour que le VoNR fonctionne, Kamailio IMS doit être intégré au 5GC (probablement Open5GS dans ton cas). Voici les fonctions clés à implémenter :
+
+a) Interface N5 (P-CSCF ↔ PCF)
+Pourquoi ? : Le P-CSCF doit demander au PCF la création d’un flux QoS dédié pour la voix (QCI 1, faible latence, priorité élevée).
+Comment ? :
+Modifier le P-CSCF pour supporter l’interface N5 (HTTP/2) au lieu de l’ancienne interface Rx (Diameter, utilisée pour VoLTE).
+Ajouter un module dans Kamailio (ex. : personnalisé ou via un script externe) pour envoyer des requêtes Npcf_PolicyAuthorization au PCF.
+Exemple de flux : Lors d’un SIP INVITE, le P-CSCF envoie une requête au PCF pour allouer un flux QoS, qui est ensuite propagé au SMF et au gNB via le 5GC.
+b) Authentification et gestion des abonnés
+HSS ou UDM : Si tu utilises Open5GS, tu as probablement un HSS (via PyHSS ou autre). Kamailio doit interagir avec lui via Diameter (Cx).
+Fonction à ajouter : Configurer le module ims_auth dans Kamailio pour gérer l’authentification AKA (Authentication and Key Agreement) propre à IMS.
+c) PDU Session pour IMS
+Rôle du 5GC : Une session PDU spécifique (APN IMS) doit être établie pour transporter les flux SIP et RTP.
+Action : Vérifie que ton Open5GS est configuré pour accepter un APN IMS avec IPv4 (Kamailio ne supporte pas encore pleinement IPv6 pour IMS dans certains cas).
+3. Gestion des flux média (RTP)
+RTP Proxy : Kamailio ne gère pas directement les flux média (RTP). Tu dois ajouter un composant comme RTPproxy ou RTPengine dans ton setup Docker.
+Fonctions à ajouter :
+Relayer les flux RTP entre les UEs via un conteneur dédié.
+Configurer Kamailio pour insérer les en-têtes SDP (Session Description Protocol) et communiquer avec RTPproxy via le module rtpproxy.
+4. Communication end-to-end : Étapes pratiques
+Pour une communication VoNR de bout en bout, voici ce que tu dois faire dans ton environnement Docker :
+
+a) Dockerfile et Compose
+Utilise un fichier docker-compose.yml pour orchestrer :
+srsRAN (gNB)
+Open5GS (5GC : AMF, SMF, UPF, PCF, etc.)
+Kamailio IMS (P-CSCF, I-CSCF, S-CSCF)
+RTPproxy
+Exemple (simplifié) :
+yaml
+Envelopper
+Copier
+services:
+  srsran-gnb:
+    image: srsran:latest
+    # Config gNB
+  open5gs:
+    image: docker_open5gs
+    # Config 5GC
+  kamailio-pcscf:
+    image: docker_kamailio
+    command: kamailio -f /etc/kamailio/pcscf.cfg
+  kamailio-icscf:
+    image: docker_kamailio
+    command: kamailio -f /etc/kamailio/icscf.cfg
+  kamailio-scscf:
+    image: docker_kamailio
+    command: kamailio -f /etc/kamailio/scscf.cfg
+  rtpproxy:
+    image: rtpproxy:latest
+b) Configurer les fichiers Kamailio
+P-CSCF : Ajoute le support N5 (voir les travaux dans herlesupreeth/docker_open5gs, discussion #333).
+I-CSCF/S-CSCF : Configure Diameter avec le module ims_diameter_client.
+c) Tester avec un UE
+Utilise un UE simulé (ex. : UERANSIM) ou un vrai dispositif 5G compatible VoNR.
+Envoie un SIP REGISTER depuis l’UE, suivi d’un SIP INVITE pour établir un appel.
+5. Défis et solutions
+Support N5 dans Kamailio : En mars 2025, le support natif de N5 n’est pas encore pleinement intégré dans Kamailio open-source. Tu peux t’inspirer des démos comme celle de OSMNT’24 (Kamailio + Open5GS) ou contribuer au code.
+QoS : Assure-toi que srsRAN supporte les modifications de session pour allouer des flux QoS dédiés (sinon, c’est un problème côté RAN).
+Débogage : Utilise Wireshark dans Docker pour capturer les échanges SIP, Diameter, et N5.

@@ -1,0 +1,20 @@
+$ORIGIN NR_DOMAIN.
+$TTL 1W
+@                       1D IN SOA       localhost. root.localhost. (
+                                        1		; serial
+                                        3H              ; refresh
+                                        15M             ; retry
+                                        1W              ; expiry
+                                        1D )            ; minimum
+
+                        1D IN NS        nrns
+nrns                    1D IN A         DNS_IP
+
+amf                     1D IN A         AMF_IP
+_sip._udp.amf           1D SRV 0 0 5060 amf  ; Port SIP si pertinent
+_sip._tcp.amf           1D SRV 0 0 5060 amf  ; Port SIP si pertinent
+
+pcf                     1D IN A         PCF_IP
+_n5._tcp.pcf            1D SRV 0 0 7777 pcf  ; Port N5 pour PCF
+
+upf                     1D IN A         UPF_IP
